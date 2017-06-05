@@ -1,0 +1,781 @@
+more at:
+http://www.vogella.com/tutorials/Groovy/article.html
+//////////////////////////////////
+import groovy.transform.ToString
+
+class GroovyTest01 {
+	
+	@ToString(includeNames=true)
+	static class Person {
+		String name
+		int age
+		def description
+	}
+	
+	static main(args) {
+		Person p = new Person()
+		def num = 123
+		List<Person> list = []		
+		list[0] = p
+		list[1] = 242 //by default generic types are not enforced
+		println list[0]
+		//println list[0].name.class //null pointer exception because 'name' is null
+		println list[0].name?.class //null safe operator is used
+		println list[1]
+		println new Person(name : "Asen") //named parameter constructor
+		// Strings enclosed in "" (double quotes) are Groovy Strings and can reference 
+		// variables like "$var" or execute Groovy code inside them
+		2.times { println "Executed several times $num" }
+		// Strings enclosed in '' (single quotes) are Java Strings
+		2.times { println 'Executed several times $num' }
+	}
+}
+//////////////////////////////////
+import groovy.transform.ToString
+
+class GroovyTest01 {
+	@ToString(includeNames=true)
+	static class Warrior {
+		def name
+		def hp
+		//override the + operator
+		Warrior plus(other) {
+			if(other == null) {
+				new Warrior(hp : this.hp)
+			} else {
+				new Warrior(hp : this.hp + other.hp)
+			}
+		}
+
+		//override the - operator
+		Warrior minus(other) {
+			if(other == null) {
+				new Warrior(hp : this.hp)
+			} else {
+				new Warrior(hp : this.hp - other.hp)
+			}
+		}
+	}
+
+	static main(args) {
+		for(num in 1..3) {
+			print num + " "
+		}
+		for(symbol in 'a'..'d') {
+			print symbol + " "
+		}
+		print "\n"
+		Warrior war1 = new Warrior(hp : 20)
+		Warrior war2 = new Warrior(hp : 30)
+		println war1
+		println war2
+		println war1 + war2
+		println war1 + null
+		def str, bStr, abcStr
+		str = "abcdabcdABCD"
+		bStr = "b"
+		abcStr = "abc"
+		println "original string is: " + str
+		println str - bStr
+		println str - abcStr
+		println str + bStr
+		println str << bStr
+	}
+}
+//////////////////////////////////
+import groovy.transform.ToString
+
+class GroovyTest01 {
+	@ToString(includeNames=true)
+	static class Warrior {
+		def name
+		def hp
+	}
+
+	static main(args) {
+		List list = [];
+		list[0] = new Warrior(hp : 100)
+		list[list.size()] = new Warrior(hp : 200)
+		list.add(new Warrior(hp : 300))
+		println list
+		println list.hp
+		def hps = list.hp
+		def joined = hps.join("___")
+		println joined
+		println joined.class
+		//The spread dot operator (spread-dot operator) *. is used to invoke a method on 
+		//all members of a Collection. The result of this operation is another Collection object.
+		List numbers = [1, 2, 34]
+		println numbers
+		def otherList = numbers*.plus(10)
+		println otherList
+	}
+}
+//////////////////////////////////
+import groovy.transform.ToString
+
+class GroovyTest01 {
+	@ToString(includeNames=true)
+	static class Warrior {
+		def name
+		def hp
+	}
+
+	static main(args) {
+		testMap()
+		//testClosure()
+	}
+	
+	static void testMap() {
+		println "TEST OF MAP"
+		def mapA = [:]
+		mapA.Asen = 20
+		mapA["Iva"] = 30
+		mapA['Minka'] = 40
+		println mapA
+		mapA = [Dingo : 30, "Ringo" : 40, 'Mingo' : 50]
+		println mapA
+		println mapA.get("Asen")
+		//get(key, default) - if key is not found in the map, key:default pair is added and
+		//default is returned
+		println mapA.get("Asen", 2000)
+		println mapA
+		
+		def mymap = [1:"Jim Knopf", 2:"Thomas Edison", 3:"Lars Vogel"]
+		mymap.each {entry -> println (entry.key > 1)}
+		//mymap.each ( {entry -> println (entry.key > 1)} ) //same as above with enclosing parenthesis
+		print "\n"
+		mymap.each {entry -> println (entry.value.contains("o"))}
+		println "'Lars' is contained: " + mymap.any {entry -> entry.value.contains("Lars")}
+		println "Every key in the map is smaller than 4: " + mymap.every {entry -> entry.key < 4}
+		
+		mymap.each { key, value ->
+			print key + " " + value + "\n"
+		}
+		print "\n"
+		mymap.each { entry ->
+			print entry.key + " " + entry.value + "\n"
+		}
+		//Finds all entries satisfying the condition defined by the closure
+		println mymap.findAll { entry -> entry.key >= 2 }
+		//Find the first entry satisfying the condition defined by the closure
+		println mymap.find { entry -> entry.key >= 2 }
+		//get a list of the collected data
+		def collected = mymap.collect { entry -> entry.key + "_" + entry.value.toUpperCase() }
+		println collected
+	}
+	
+	static void testClosure() {
+		println "TEST OF CLOSURES"
+		def c1 = {
+			println "Closure 1"
+		}
+		c1()
+		def c2 = {
+			int a, int b -> println "$a + $b = " + (a + b)
+		}
+		c2(4, 5)
+		def c3 = {
+			a -> println a
+		}
+		c3("Something")
+		def c4 = { 
+			println it //same as above, but shortened
+		}
+		c4("Else")
+		def c5 = { data, closure -> closure(data) }
+		c5("Some String", { data -> println "printed from c5: " + data })
+		println c5("Another String", { data -> data.toUpperCase() })
+		println c5("Another String", { it.toUpperCase() })
+		println c5("Another String") { it.toUpperCase() } //same as above, another syntax used
+		( { println "Self-invoked closure" } )()
+		def inc = ({
+			def counter = 0
+			return {
+				return ++counter
+			}
+		})()
+		println inc() + " " + inc() + " " + inc()
+		//same as inc() closure but shorter
+		def incShorter = ({
+			def counter = 0
+			//implicit return is for expressions only, closure is not an expression,
+			//so here have to use the return keyword
+			return { ++counter } 
+		})()
+		println incShorter() + " " + incShorter() + " " + incShorter()
+	}
+}
+//////////////////////////////////
+import groovy.transform.ToString
+
+class GroovyTest01 {
+	@ToString(includeNames=true)
+	static class Warrior {
+		def name
+		def hp
+	}
+
+	static main(args) {
+		assert 'Object equals' == testingSwitch(51)
+		assert 'Pattern match' == testingSwitch("Regular pattern matching")
+		assert 'Range contains' == testingSwitch(13)
+		assert 'List contains' == testingSwitch('Ubuntu')
+		assert 'Closure boolean' == testingSwitch(9)
+		assert 'Class isInstance' == testingSwitch('This is an instance of String')
+		assert 'Default' == testingSwitch(200)
+		def war1, war2
+		war1 = new Warrior(name : "Olo", hp : 200)
+		war2 = new Warrior(name : "Mogka", hp :300)
+		println war1
+		println war2
+		
+		def warriors = [war1, war2]
+		println warriors
+		println war1 in warriors
+	}
+	
+	//To use your custom class in a switch statement implement the isCase method
+	static testingSwitch(input) {
+		def result
+		switch (input) {
+			case 51:
+				result = 'Object equals'
+				break
+			case ~/^Regular.*matching/:
+				result = 'Pattern match'
+				break
+			case 10..50:
+				result = 'Range contains'
+				break
+			case ["Ubuntu", 'Android', 5, 9.12]:
+				result = 'List contains'
+				break
+			case { it instanceof Integer && it < 50 }:
+				result = 'Closure boolean'
+				break
+			case String:
+				result = 'Class isInstance'
+				break
+			default:
+				result = 'Default'
+				break
+		}
+		result
+	}
+}
+//////////////////////////////////
+import groovy.transform.ToString
+
+class GroovyTest01 {
+	@ToString(includeNames=true)
+	static class Warrior {
+		def name
+		def hp
+	}
+
+	static main(args) {
+		//testTheEachMethod()
+		numberSpecials()
+	}
+	
+	static void testTheEachMethod() {
+		println "TEST each()"
+		def list = [1, 2, 3, 4]
+		def map = [one:1, two:2]
+		list.each { e -> print e + " " }
+		print "\n"
+		map.each { entry -> print "[$entry.key $entry.value] "}
+		print "\n"
+		(1..10).each { print it + " " }
+	}
+	
+	static void numberSpecials() {
+		5.times {print "Times + $it "}
+		println ""
+		1.upto(3) {print "Up + $it "}
+		println ""
+		4.downto(1) {print "Down + $it "}
+	}
+}
+//////////////////////////////////
+/*-
+ Every Groovy object has a with method which allows to group method and property 
+ calls to an object. The with method gets a closure as parameter and every method 
+ call or property access in this closure is applied to the object.
+ */
+class GroovyTest01 {
+	static class WithTestClass {
+		String property1
+		String property2
+		List<String> list = []
+		def addElement(value) {
+			list << value
+		}
+		def returnProperties () {
+			"Property 1: $property1, Property 2: $property2 "
+		}
+	}
+
+	static main(args) {
+		def sample = new WithTestClass()
+		def result= sample.with {
+			property1 = 'Input 1'
+			property2 = 'This is cool'
+			addElement 'Ubuntu'
+			addElement 'Android'
+			addElement 'Linux'
+			returnProperties()
+		}
+		println result
+		assert 3 == sample.list.size()
+		assert 'Input 1' == sample.property1
+		assert 'This is cool' == sample.property2
+		assert 'Linux' == sample.list[2]
+
+		def sb = new StringBuilder()
+		sb.with {
+			append 'Just another way to add '
+			append 'strings to the StringBuilder '
+			append 'object.'
+		}
+		println sb
+	}
+}
+//////////////////////////////////
+class GroovyTest01 {
+
+	static main(args) {
+		File file = new File("data")
+		String fileData1 = file.text;
+		println fileData1
+		println "---------"
+		def lineNum = 0;
+		//in a groovy string you can execute and code
+		file.eachLine { line ->
+			println "${++lineNum}. $line"
+		} 
+		println "---------"
+		//file.write("new stuff")
+		file.append("\nappended text (append time: ${new Date().format("yyyy-MM-dd HH:mm:ss")})")
+		println "new file contents:"
+		println file.text
+	}
+}
+//////////////////////////////////
+class GroovyTest01 {
+
+	static main(args) {
+				String multilineStr = """once
+upon
+a time"""
+				println multilineStr
+				String multilineStr2 = '''and
+the
+story goes on
+'''
+				println multilineStr2
+	}
+
+}
+//////////////////////////////////
+class GroovyTest01 {
+	static class Animal {
+		
+	}
+	static main(args) {
+		//add properties/methods to class
+		Animal.metaClass.name = "Dog"
+		Animal.metaClass.bark = { println "Barking animal" }
+		Animal a = new Animal();
+		println a.name
+		a.bark();
+	}
+
+}
+//////////////////////////////////
+package entry
+
+class GroovyTest01 {
+	static main(args) {
+		def test = new AnyMethodExecutor ();
+		// you can call any method you like on this class
+		assert "This method is just fake" == test.hall();
+		assert "This method is just fake" == test.tralala();
+		assert "Still a fake method but 'hello' back to you." == test.helloMethod();
+
+		// setting is basically ignored
+		test.test= 35;
+		test.superDuperCool= 100
+
+		// all properties return 5
+		assert test.superDuperCool == 5
+		assert test.value == 5;
+		
+		test.printValue()
+		test.value = 34343
+		test.printValue()
+	}
+}
+class AnyMethodExecutor{
+	// Should get ignored
+	String value ="Lars"
+
+	// always return 5 no matter which property is called
+	Object getProperty (String property){
+		println "Trying to get property $property"
+		return 5;
+	}
+
+	void setProperty (String property, Object o ){
+		println "Trying to set property $property with value $o"
+		// ignore setting
+	}
+
+	def methodMissing (String name, args){
+		println "Missing method: $name, args =  $args"
+		def s = name.toLowerCase();
+		if (!s.contains("hello")) {
+			return "This method is just fake"
+		} else {
+			return "Still a fake method but 'hello' back to you."
+
+		}
+	}
+	
+	void printValue () {
+		println "Value: $value"
+	}
+}
+//////////////////////////////////
+package entry
+
+import groovy.json.JsonBuilder
+import groovy.json.JsonOutput
+import groovy.json.JsonSlurper
+import groovy.transform.ToString
+
+class GroovyTest01 {
+
+	@ToString(includeNames = true)
+	static class Warrior {
+		def name
+		def hp
+	}
+
+	static main(args) {
+		testJson();
+		testAddMethodToClass()
+	}
+
+	static void testJson() {
+		println "Test JSON"
+		def war = new Warrior(name : "Mogka", hp : 1300)
+		JsonBuilder b = new JsonBuilder(war)
+		println war
+		println b.toString() + "\n"
+		println b.toPrettyString() + "\n"
+		println JsonOutput.prettyPrint(b.toString()) + "\n"
+
+		def jsonSlurper = new JsonSlurper();
+		def obj = jsonSlurper.parseText(b.toString())
+		println obj
+		println obj.name
+	}
+	
+	static void testAddMethodToClass() {
+		//the "->" without parameters on the left side will not allow the closure to be called
+		//with arguments
+		//{ -> some code... }
+
+		//https://stackoverflow.com/questions/8120949/what-does-delegate-mean-in-groovy
+		String.metaClass.appendToString = { -> appendToString(delegate) }
+
+		println '12345'.appendToString()
+		
+		String.metaClass.anotherAppend = { -> delegate << "444" }
+		println "seven".anotherAppend()
+	}
+
+	static def appendToString(String s){
+		s<<"AAAAAAAAAA"
+	}
+}
+
+//////////////////////////////////
+class GroovyTest01 {
+	
+	@ToString(includeNames=true)
+	static class Orc {
+		def name = "Unknown orc"
+		def hp = 100
+	}
+	
+	@ToString(includeNames=true)
+	static class Undead {
+		def name = "Unknown undead"
+		def hp = 100
+	}
+
+	static main(args) {
+		Orc orc = new Orc(name : "Mogka")
+		Undead undead = new Undead()
+		def c1 = { 
+			println "This closure's delegate = $delegate"
+			println "delegate.name = $delegate.name" 
+		}
+		c1.setDelegate(orc)
+		c1()
+		c1.setDelegate(undead)
+		c1()
+	}
+}
+//////////////////////////////////
+package entry
+
+import groovy.transform.ToString
+
+class GroovyTest01 {
+
+	static main(args) {
+		//testDelegate()
+		testMissingMethodProperty() //and some stuff used in gradle
+	}
+	
+	static void testDelegate() {
+		Orc orc = new Orc(name : "Mogka")
+		Undead undead = new Undead()
+		def c1 = {
+			println "This closure's delegate = $delegate"
+			println "delegate.name = $delegate.name"
+		}
+		c1.setDelegate(orc)
+		c1()
+		c1.setDelegate(undead)
+		c1()
+	}
+
+	static void testMissingMethodProperty() {
+		Orc orc = new Orc();
+		orc.no = 4
+		orc.such
+		orc.thing("exists")
+		orc.say("Ole")
+		orc.callClosure { //This is the principle used in Gradle
+			say "At last"
+			say (what1 : "111", what2 : "222")
+			fake "one"
+			sayMap "a" : "AAAA", "b":"BBBB", c : "CCCC"
+		}
+	}
+}
+
+@ToString(includeNames=true)
+class Orc {
+	def name = "Unknown orc"
+	def hp = 100
+	
+	void callClosure(closure) { //this principle is used in Gradle
+		closure.setDelegate(this)
+		closure()
+	}
+	
+	void sayMap(map) {
+		println "sayMap:"
+		map.each({ entry -> println "[$entry.key $entry.value]" })
+		println map["a"] + " " + map[noSuchThing]
+	}
+	
+	void say(what) {
+		println "The orc said: $what"
+	}
+	
+	def methodMissing (String name, args){
+		println "Missing method '$name', called with args = '$args'"
+	}
+	
+	//missing setter
+	def propertyMissing(String name, value) {
+		println "Trying to set missing property '$name' with value = '$value'"
+	}
+	
+	//missing getter
+	def propertyMissing(String name) {
+		println "Trying to get missing property '$name'"
+	}
+}
+
+@ToString(includeNames=true)
+class Undead {
+	def name = "Unknown undead"
+	def hp = 100
+}
+//////////////////////////////////
+package entry
+
+class GroovyTest01 {
+
+	static main(args) {
+		//GradleSyntaxExercise.testAll()
+		//TraitTester.test()
+		LikeJavaScriptObject.test()
+		def banana = new DynamicBanana()
+		println banana.bananaName
+		println "banana.color is not set and has value: " + banana.color
+		banana.color = "green"
+		println "banana.color is already set and has value: " + banana.color
+	}
+	
+}
+
+//use a class as javascript object
+class LikeJavaScriptObject {
+	private Map props = [:]
+	
+	def propertyMissing(String propName) {
+		props[propName]
+	}
+	
+	def propertyMissing(String propName, def value) {
+		props[propName] = value
+	}	
+	
+	static void test() {
+		LikeJavaScriptObject obj = new LikeJavaScriptObject()
+		obj.name = "Minimal"
+		obj.status = "painful"
+		println obj.props
+	}
+}
+
+//another option is to put the above behavior in a trait, like that you can pass it to different classes
+trait DynamicObject {
+	private Map props = [:]
+	
+	def propertyMissing(String propName) {
+		props[propName]
+	}
+	
+	def propertyMissing(String propName, def value) {
+		props[propName] = value
+	}
+}
+class DynamicBanana implements DynamicObject {
+	def bananaName = "Gosho"
+} 
+//////////////////////////////////
+package tests
+
+import groovy.transform.ToString
+
+class TraitTester {
+	static void test() {
+		def orc = new Orc(name : "Mogka")
+		orc.talk()
+		println "warrior's title: " + orc.getWarriorRank()
+		println "the orc attacks with: " + orc.attack()
+		println "honor points: $orc.honorPoints"
+		orc.die()
+	}
+}
+
+/*-
+ avoids the diamond problem (https://en.wikipedia.org/wiki/Multiple_inheritance#The_diamond_problem)
+ by invoking the method from the last trait having method name conflict
+ */
+@ToString(includeNames = true)
+class Orc implements Knight, Warrior {
+	def name = "Unnamed"
+	def hp = 1000
+
+	def talk() {
+		println "orc \"$name\" is talking"
+	}
+
+	@Override
+	String getWarriorRank() {
+		return "Warmonger"
+	}
+
+	@Override
+	public void die() {
+		println "the orc died"
+	}
+}
+
+trait Charger {
+	def chargeDistanceYards = 10
+	void charge() {
+		println "Charger charged"
+	}
+}
+//A trait can extends only one trait, but can implement multiple traits
+//couldn't find any difference between extending and implementing trait except that: (extends 1, implements 1 or more)
+trait Warrior extends Charger implements IKillable {
+	abstract String getWarriorRank()
+	String attack() {
+		"warrior's attack"
+	}
+}
+//a trait can't have constructor and can't be directly instantiated
+trait Knight implements IKillable {
+	int honorPoints = 100
+
+	String attack() {
+		"knight's attack"
+	}
+}
+
+interface IKillable {
+	void die()
+}
+//////////////////////////////////
+package test.trait
+
+import groovy.transform.ToString
+
+//Trait Chaining
+
+class TraitTester02 {
+	
+	static void printer() {
+		println "Finishing the chain"
+	}
+	
+	static void test() {
+		def orc = new Orc()
+		orc.printer()
+	}
+	
+	@ToString(includeNames = true)
+	static class Orc implements C, B, A {
+		String name
+		def hp
+	}
+
+	trait A {
+		void printer() {
+			println "AAA"
+			super.printer()
+		}
+	}
+	trait B {
+		void printer() {
+			println "BBB"
+			super.printer() 
+		}
+	}
+	trait C {
+		void printer() {
+			println "CCC"
+			//if a class implements multiple traits and a call to an unqualified super is found, then:
+			//- if the class implements another trait, the call delegates to the next trait in the chain
+			//- if there isn’t any trait left in the chain, super refers to the super class of the implementing class (this)
+			super.printer() 
+		}
+	}
+}
+//////////////////////////////////
+//////////////////////////////////
+//////////////////////////////////
+//////////////////////////////////
